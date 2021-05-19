@@ -17,7 +17,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     
-    <groupId>com.lbole.common</groupId>
+    <groupId>com.itaddr.common</groupId>
     <artifactId>common-tools</artifactId>
     <version>1.0.0</version>
     
@@ -34,7 +34,7 @@
         <junit.version>4.12</junit.version>
         <logback.version>1.2.3</logback.version>
         <slf4j.version>1.7.25</slf4j.version>
-        <commons-lang3.version>3.5</commons-lang3.version>
+        <commons.lang3.version>3.5</commons.lang3.version>
         <cglib.version>3.3.0</cglib.version>
         <javassist.version>3.27.0-GA</javassist.version>
     </properties>
@@ -47,6 +47,12 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
         
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -56,15 +62,9 @@
         </dependency>
         
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
-        
-        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>${commons-lang3.version}</version>
+            <version>${commons.lang3.version}</version>
         </dependency>
         
         <dependency>

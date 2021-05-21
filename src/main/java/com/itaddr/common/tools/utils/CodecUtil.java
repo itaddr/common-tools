@@ -19,9 +19,12 @@ import com.itaddr.common.tools.enums.KeysEnum;
 
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
+import java.math.BigInteger;
 import java.security.*;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.zip.CRC32;
@@ -34,10 +37,12 @@ import java.util.zip.CRC32;
  * @Description
  */
 public final class CodecUtil {
-    
+
+    public static final BigInteger RSA_PUBLIC_EXPONENT = BigInteger.valueOf(65537);
+
     private CodecUtil() {
     }
-    
+
     /**
      * 生成指定长度的随机字节数据
      *
@@ -49,7 +54,7 @@ public final class CodecUtil {
         ThreadLocalRandom.current().nextBytes(randomBytes);
         return randomBytes;
     }
-    
+
     /**
      * 生成单个密钥
      *
@@ -73,7 +78,7 @@ public final class CodecUtil {
         generator.init(mode.getKeyBits(), secureRandom);
         return generator.generateKey();
     }
-    
+
     /**
      * 生成密钥对
      *
@@ -94,7 +99,23 @@ public final class CodecUtil {
         generator.initialize(mode.getKeyBits(), secureRandom);
         return generator.generateKeyPair();
     }
-    
+
+    /**
+     * 通过RSA私钥计算出公钥
+     *
+     * @param privateKey
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeySpecException
+     */
+    public static byte[] getRsaPublicKey(byte[] privateKey) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        KeyFactory factory = KeyFactory.getInstance(KeysEnum.RSA2048.getName());
+        RSAPrivateKey rsaPrivateKey = (RSAPrivateKey) factory.generatePrivate(new PKCS8EncodedKeySpec(privateKey));
+        RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(rsaPrivateKey.getModulus(), RSA_PUBLIC_EXPONENT);
+        PublicKey publicKey = factory.generatePublic(publicKeySpec);
+        return publicKey.getEncoded();
+    }
+
     /**
      * MD5摘要算法
      *
@@ -107,7 +128,7 @@ public final class CodecUtil {
         digest.update(message);
         return digest.digest();
     }
-    
+
     /**
      * SHA-1摘要算法
      *
@@ -120,7 +141,7 @@ public final class CodecUtil {
         digest.update(message);
         return digest.digest();
     }
-    
+
     /**
      * SHA-256摘要算法
      *
@@ -133,7 +154,7 @@ public final class CodecUtil {
         digest.update(message);
         return digest.digest();
     }
-    
+
     /**
      * SHA-384摘要算法
      *
@@ -146,7 +167,7 @@ public final class CodecUtil {
         digest.update(message);
         return digest.digest();
     }
-    
+
     /**
      * SHA-512摘要算法
      *
@@ -159,7 +180,7 @@ public final class CodecUtil {
         digest.update(message);
         return digest.digest();
     }
-    
+
     /**
      * CRC32摘要算法
      *
@@ -171,7 +192,7 @@ public final class CodecUtil {
         crc32.update(message);
         return (int) crc32.getValue();
     }
-    
+
     /**
      * HmacMD5摘要算法
      *
@@ -187,7 +208,7 @@ public final class CodecUtil {
         mac.init(secretKey);
         return mac.doFinal(message);
     }
-    
+
     /**
      * HmacSHA1摘要算法
      *
@@ -203,7 +224,7 @@ public final class CodecUtil {
         mac.init(secretKey);
         return mac.doFinal(message);
     }
-    
+
     /**
      * HmacSHA256散列
      *
@@ -219,7 +240,7 @@ public final class CodecUtil {
         mac.init(secretKey);
         return mac.doFinal(message);
     }
-    
+
     /**
      * HmacSHA384散列
      *
@@ -235,7 +256,7 @@ public final class CodecUtil {
         mac.init(secretKey);
         return mac.doFinal(message);
     }
-    
+
     /**
      * HmacSHA512散列
      *
@@ -251,8 +272,8 @@ public final class CodecUtil {
         mac.init(secretKey);
         return mac.doFinal(message);
     }
-    
-    
+
+
     /**
      * 从字节数组生成32位murmur2哈希
      *
@@ -267,11 +288,11 @@ public final class CodecUtil {
         // 它们并不是真正的“magic”，它们恰好运作良好。
         final int m = 0x5bd1e995;
         final int r = 24;
-        
+
         // 将哈希初始化为随机值
         int h = seed ^ length;
         int length4 = length / 4;
-        
+
         for (int i = 0; i < length4; i++) {
             final int i4 = i * 4;
             int k = (message[i4] & 0xff) + ((message[i4 + 1] & 0xff) << 8) + ((message[i4 + 2] & 0xff) << 16) + ((message[i4 + 3] & 0xff) << 24);
@@ -281,7 +302,7 @@ public final class CodecUtil {
             h *= m;
             h ^= k;
         }
-        
+
         // 处理输入数组的最后几个字节
         final int val = length % IntegerValue.FOUR;
         if (IntegerValue.THREE == val) {
@@ -292,15 +313,15 @@ public final class CodecUtil {
             h ^= message[length & ~3] & 0xff;
             h *= m;
         }
-        
+
         h ^= h >>> 13;
         h *= m;
         h ^= h >>> 15;
-        
+
         return h;
     }
-    
-    
+
+
     /**
      * AES128算法
      *
@@ -321,7 +342,7 @@ public final class CodecUtil {
         // 4 执行
         return cipher.doFinal(message);
     }
-    
+
     /**
      * AES128解密算法
      *
@@ -333,7 +354,7 @@ public final class CodecUtil {
     public static byte[] enaes128(AES128Enum aes128, byte[] keys, byte[] message) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException {
         return aes128(Cipher.ENCRYPT_MODE, aes128, keys, message);
     }
-    
+
     /**
      * AES128解密算法
      *
@@ -345,21 +366,21 @@ public final class CodecUtil {
     public static byte[] deaes128(AES128Enum aes128, byte[] keys, byte[] message) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException {
         return aes128(Cipher.DECRYPT_MODE, aes128, keys, message);
     }
-    
-    private static byte[] prirsa(int mode, byte[] publicKey, byte[] message) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        PrivateKey priKey = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(publicKey));
+
+    private static byte[] prirsa(int mode, byte[] privateKey, byte[] message) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+        PrivateKey priKey = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(privateKey));
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(mode, priKey);
         return cipher.doFinal(message);
     }
-    
+
     private static byte[] pubrsa(int mode, byte[] publicKey, byte[] message) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
         PublicKey pubKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(publicKey));
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(mode, pubKey);
         return cipher.doFinal(message);
     }
-    
+
     /**
      * RSA私钥签名数据
      *
@@ -376,7 +397,7 @@ public final class CodecUtil {
     public static byte[] prienrsa(byte[] privateKey, byte[] message) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
         return prirsa(Cipher.ENCRYPT_MODE, privateKey, message);
     }
-    
+
     /**
      * RSA私钥解密数据
      *
@@ -393,7 +414,7 @@ public final class CodecUtil {
     public static byte[] pridersa(byte[] privateKey, byte[] message) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
         return prirsa(Cipher.DECRYPT_MODE, privateKey, message);
     }
-    
+
     /**
      * RSA公钥加密数据
      *
@@ -410,7 +431,7 @@ public final class CodecUtil {
     public static byte[] pubenrsa(byte[] publicKey, byte[] message) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
         return pubrsa(Cipher.ENCRYPT_MODE, publicKey, message);
     }
-    
+
     /**
      * RSA公钥解密签名
      *
@@ -427,5 +448,5 @@ public final class CodecUtil {
     public static byte[] pubdersa(byte[] publicKey, byte[] message) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
         return pubrsa(Cipher.DECRYPT_MODE, publicKey, message);
     }
-    
+
 }

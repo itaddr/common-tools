@@ -22,6 +22,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPublicKeySpec;
@@ -108,12 +109,11 @@ public final class CodecUtil {
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeySpecException
      */
-    public static byte[] getRsaPublicKey(byte[] privateKey) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public static RSAPublicKey getRsaPublicKey(byte[] privateKey) throws NoSuchAlgorithmException, InvalidKeySpecException {
         KeyFactory factory = KeyFactory.getInstance(KeysEnum.RSA2048.getName());
         RSAPrivateKey rsaPrivateKey = (RSAPrivateKey) factory.generatePrivate(new PKCS8EncodedKeySpec(privateKey));
         RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(rsaPrivateKey.getModulus(), RSA_PUBLIC_EXPONENT);
-        PublicKey publicKey = factory.generatePublic(publicKeySpec);
-        return publicKey.getEncoded();
+        return (RSAPublicKey) factory.generatePublic(publicKeySpec);
     }
 
     /**

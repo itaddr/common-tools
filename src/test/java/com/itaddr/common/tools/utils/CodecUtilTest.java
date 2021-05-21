@@ -96,7 +96,7 @@ public final class CodecUtilTest {
         System.out.println(Base64.getEncoder().encodeToString(publicKeyBytes));
 
         System.out.println();
-        byte[] extractRsaPublicKey = CodecUtil.getRsaPublicKey(privateKeyBytes);
+        byte[] extractRsaPublicKey = CodecUtil.getRsaPublicKey(privateKeyBytes).getEncoded();
         System.out.println(Base64.getEncoder().encodeToString(extractRsaPublicKey));
     }
 

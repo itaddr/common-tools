@@ -1,12 +1,10 @@
 package com.itaddr.common.tools.utils;
 
-import com.itaddr.common.tools.enums.AES128Enum;
 import com.itaddr.common.tools.enums.KeysEnum;
 import org.junit.Test;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
@@ -42,7 +40,7 @@ public final class CodecUtilTest {
     }
 
     @Test
-    public void genKey() throws NoSuchAlgorithmException, NoSuchProviderException {
+    public void genKey() {
         SecretKey key = CodecUtil.genKey(KeysEnum.AES128);
         assert key != null;
 
@@ -60,7 +58,7 @@ public final class CodecUtilTest {
     }
 
     @Test
-    public void genKeyPair() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+    public void genKeyPair() throws NoSuchAlgorithmException, InvalidKeySpecException {
         KeyPair keyPair = CodecUtil.genKeyPair(KeysEnum.RSA2048);
         assert keyPair != null;
 
@@ -83,7 +81,7 @@ public final class CodecUtilTest {
     }
 
     @Test
-    public void getRsaPublicKey() throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
+    public void getRsaPublicKey() throws InvalidKeySpecException {
         KeyPair keyPair = CodecUtil.genKeyPair(KeysEnum.RSA2048);
         assert keyPair != null;
 
@@ -101,35 +99,35 @@ public final class CodecUtilTest {
     }
 
     @Test
-    public void md5() throws NoSuchAlgorithmException {
+    public void md5() {
         byte[] sources = CodecUtil.randomBytes(32);
         byte[] bytes = CodecUtil.md5(sources);
         System.out.println(Base64.getEncoder().encodeToString(bytes));
     }
 
     @Test
-    public void sha1() throws NoSuchAlgorithmException {
+    public void sha1() {
         byte[] sources = CodecUtil.randomBytes(32);
         byte[] bytes = CodecUtil.sha1(sources);
         System.out.println(Base64.getEncoder().encodeToString(bytes));
     }
 
     @Test
-    public void sha256() throws NoSuchAlgorithmException {
+    public void sha256() {
         byte[] sources = CodecUtil.randomBytes(32);
         byte[] bytes = CodecUtil.sha256(sources);
         System.out.println(Base64.getEncoder().encodeToString(bytes));
     }
 
     @Test
-    public void sha384() throws NoSuchAlgorithmException {
+    public void sha384() {
         byte[] sources = CodecUtil.randomBytes(32);
         byte[] bytes = CodecUtil.sha384(sources);
         System.out.println(Base64.getEncoder().encodeToString(bytes));
     }
 
     @Test
-    public void sha512() throws NoSuchAlgorithmException {
+    public void sha512() {
         byte[] sources = CodecUtil.randomBytes(32);
         byte[] bytes = CodecUtil.sha512(sources);
         System.out.println(Base64.getEncoder().encodeToString(bytes));
@@ -143,7 +141,7 @@ public final class CodecUtilTest {
     }
 
     @Test
-    public void hmacMD5() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
+    public void hmacMD5() {
         byte[] keys = Objects.requireNonNull(CodecUtil.genKey(KeysEnum.HmacMD5)).getEncoded();
         byte[] sources = CodecUtil.randomBytes(32);
         byte[] bytes = CodecUtil.hmacMD5(keys, sources);
@@ -151,7 +149,7 @@ public final class CodecUtilTest {
     }
 
     @Test
-    public void hmacSHA1() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
+    public void hmacSHA1() {
         byte[] keys = Objects.requireNonNull(CodecUtil.genKey(KeysEnum.HmacSHA1)).getEncoded();
         byte[] sources = CodecUtil.randomBytes(32);
         byte[] bytes = CodecUtil.hmacSHA1(keys, sources);
@@ -159,7 +157,7 @@ public final class CodecUtilTest {
     }
 
     @Test
-    public void hmacSHA256() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
+    public void hmacSHA256() {
         byte[] keys = Objects.requireNonNull(CodecUtil.genKey(KeysEnum.HmacSHA256)).getEncoded();
         byte[] sources = CodecUtil.randomBytes(32);
         byte[] bytes = CodecUtil.hmacSHA256(keys, sources);
@@ -167,7 +165,7 @@ public final class CodecUtilTest {
     }
 
     @Test
-    public void hmacSHA384() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
+    public void hmacSHA384() {
         byte[] keys = Objects.requireNonNull(CodecUtil.genKey(KeysEnum.HmacSHA384)).getEncoded();
         byte[] sources = CodecUtil.randomBytes(32);
         byte[] bytes = CodecUtil.hmacSHA384(keys, sources);
@@ -175,7 +173,7 @@ public final class CodecUtilTest {
     }
 
     @Test
-    public void hmacSHA512() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
+    public void hmacSHA512() {
         byte[] keys = Objects.requireNonNull(CodecUtil.genKey(KeysEnum.HmacSHA512)).getEncoded();
         byte[] sources = CodecUtil.randomBytes(32);
         byte[] bytes = CodecUtil.hmacSHA512(keys, sources);
@@ -189,21 +187,22 @@ public final class CodecUtilTest {
     }
 
     @Test
-    public void aes128() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, NoSuchPaddingException, BadPaddingException, IllegalBlockSizeException {
+    public void aes128() throws InvalidKeyException, BadPaddingException {
         byte[] keys = Objects.requireNonNull(CodecUtil.genKey(KeysEnum.AES128)).getEncoded();
 
         byte[] sources = CodecUtil.randomBytes(128);
         System.out.println("sources : " + Base64.getEncoder().encodeToString(sources));
 
-        byte[] enaes128 = CodecUtil.enaes128(AES128Enum.ECB_PKCS5_PADDING, keys, sources);
+        byte[] enaes128 = CodecUtil.enaes128(keys, sources);
         System.out.println("enaes128: " + Base64.getEncoder().encodeToString(enaes128));
 
-        byte[] deaes128 = CodecUtil.deaes128(AES128Enum.ECB_PKCS5_PADDING, keys, enaes128);
+        byte[] deaes128 = CodecUtil.deaes128(keys, enaes128);
         System.out.println("deaes128: " + Base64.getEncoder().encodeToString(deaes128));
+
     }
 
     @Test
-    public void codecrsa() throws NoSuchProviderException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
+    public void codecrsa() throws InvalidKeyException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
         KeyPair keyPair = CodecUtil.genKeyPair(KeysEnum.RSA2048);
         assert keyPair != null;
         PrivateKey privateKey = keyPair.getPrivate();

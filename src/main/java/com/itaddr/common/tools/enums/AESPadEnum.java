@@ -21,7 +21,7 @@ package com.itaddr.common.tools.enums;
  * @Date 2019/5/16 0016 09 35
  * @Description
  */
-public enum AES128Enum {
+public enum AESPadEnum {
     
     /**
      * 字节加密后数据长度: 16; 不满16字节加密后长度: 不支持
@@ -91,7 +91,7 @@ public enum AES128Enum {
     
     private final String name;
     
-    AES128Enum(final String name) {
+    AESPadEnum(final String name) {
         this.name = name;
     }
     
@@ -99,8 +99,8 @@ public enum AES128Enum {
         return name;
     }
     
-    public static AES128Enum parse(final String name) {
-        for (AES128Enum aes : AES128Enum.values()) {
+    public static AESPadEnum parse(final String name) {
+        for (AESPadEnum aes : AESPadEnum.values()) {
             if (aes.getName().equals(name)) {
                 return aes;
             }

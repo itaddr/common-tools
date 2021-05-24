@@ -14,8 +14,9 @@
 package com.itaddr.common.tools.utils;
 
 import com.itaddr.common.tools.constants.IntegerValue;
-import com.itaddr.common.tools.enums.AES128Enum;
+import com.itaddr.common.tools.enums.AESPadEnum;
 import com.itaddr.common.tools.enums.KeysEnum;
+import com.itaddr.common.tools.enums.RSAPadEnum;
 
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
@@ -41,6 +42,9 @@ public final class CodecUtil {
 
     public static final BigInteger RSA_PUBLIC_EXPONENT = BigInteger.valueOf(65537);
 
+    private static final String SECURE_RANDOM_ALGORITHM = "SHA1PRNG";
+    private static final String SECURE_RANDOM_PROVIDER = "SUN";
+
     private CodecUtil() {
     }
 
@@ -61,10 +65,8 @@ public final class CodecUtil {
      *
      * @param mode
      * @return
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchProviderException
      */
-    public static SecretKey genKey(KeysEnum mode) throws NoSuchAlgorithmException, NoSuchProviderException {
+    public static SecretKey genKey(KeysEnum mode) {
         if (null == mode) {
             throw new IllegalArgumentException("mode can not be empty");
         }
@@ -74,8 +76,18 @@ public final class CodecUtil {
         // 安全性比Random高的随机数生成器
         // 参数一：指定算算法，主要为NativePRNG、SHA1PRNG，默认SHA1PRNG性能占优，NativePRNG安全占优
         // 参数二：指定算法程序包，默认为SUN
-        SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG", "SUN");
-        KeyGenerator generator = KeyGenerator.getInstance(mode.getName());
+        SecureRandom secureRandom;
+        try {
+            secureRandom = SecureRandom.getInstance(SECURE_RANDOM_ALGORITHM, SECURE_RANDOM_PROVIDER);
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            throw new RuntimeException(e);
+        }
+        KeyGenerator generator;
+        try {
+            generator = KeyGenerator.getInstance(mode.getName());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
         generator.init(mode.getKeyBits(), secureRandom);
         return generator.generateKey();
     }
@@ -85,18 +97,26 @@ public final class CodecUtil {
      *
      * @param mode
      * @return
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchProviderException
      */
-    public static KeyPair genKeyPair(KeysEnum mode) throws NoSuchAlgorithmException, NoSuchProviderException {
+    public static KeyPair genKeyPair(KeysEnum mode) {
         if (null == mode) {
             throw new IllegalArgumentException("mode can not be empty");
         }
         if (!mode.isHaveKey() || mode.isSymmetric()) {
             return null;
         }
-        SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG", "SUN");
-        KeyPairGenerator generator = KeyPairGenerator.getInstance(mode.getName());
+        SecureRandom secureRandom;
+        try {
+            secureRandom = SecureRandom.getInstance(SECURE_RANDOM_ALGORITHM, SECURE_RANDOM_PROVIDER);
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            throw new RuntimeException(e);
+        }
+        KeyPairGenerator generator;
+        try {
+            generator = KeyPairGenerator.getInstance(mode.getName());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
         generator.initialize(mode.getKeyBits(), secureRandom);
         return generator.generateKeyPair();
     }
@@ -106,11 +126,15 @@ public final class CodecUtil {
      *
      * @param privateKey
      * @return
-     * @throws NoSuchAlgorithmException
      * @throws InvalidKeySpecException
      */
-    public static RSAPublicKey getRsaPublicKey(byte[] privateKey) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        KeyFactory factory = KeyFactory.getInstance(KeysEnum.RSA2048.getName());
+    public static RSAPublicKey getRsaPublicKey(byte[] privateKey) throws InvalidKeySpecException {
+        KeyFactory factory;
+        try {
+            factory = KeyFactory.getInstance(KeysEnum.RSA2048.getName());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
         RSAPrivateKey rsaPrivateKey = (RSAPrivateKey) factory.generatePrivate(new PKCS8EncodedKeySpec(privateKey));
         RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(rsaPrivateKey.getModulus(), RSA_PUBLIC_EXPONENT);
         return (RSAPublicKey) factory.generatePublic(publicKeySpec);
@@ -121,10 +145,14 @@ public final class CodecUtil {
      *
      * @param message
      * @return
-     * @throws NoSuchAlgorithmException
      */
-    public static byte[] md5(byte[] message) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance(KeysEnum.MD5.getName());
+    public static byte[] md5(byte[] message) {
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance(KeysEnum.MD5.getName());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
         digest.update(message);
         return digest.digest();
     }
@@ -134,10 +162,14 @@ public final class CodecUtil {
      *
      * @param message
      * @return
-     * @throws NoSuchAlgorithmException
      */
-    public static byte[] sha1(byte[] message) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance(KeysEnum.SHA1.getName());
+    public static byte[] sha1(byte[] message) {
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance(KeysEnum.SHA1.getName());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
         digest.update(message);
         return digest.digest();
     }
@@ -147,10 +179,14 @@ public final class CodecUtil {
      *
      * @param message
      * @return
-     * @throws NoSuchAlgorithmException
      */
-    public static byte[] sha256(byte[] message) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance(KeysEnum.SHA256.getName());
+    public static byte[] sha256(byte[] message) {
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance(KeysEnum.SHA256.getName());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
         digest.update(message);
         return digest.digest();
     }
@@ -160,10 +196,14 @@ public final class CodecUtil {
      *
      * @param message
      * @return
-     * @throws NoSuchAlgorithmException
      */
-    public static byte[] sha384(byte[] message) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance(KeysEnum.SHA384.getName());
+    public static byte[] sha384(byte[] message) {
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance(KeysEnum.SHA384.getName());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
         digest.update(message);
         return digest.digest();
     }
@@ -173,10 +213,14 @@ public final class CodecUtil {
      *
      * @param message
      * @return
-     * @throws NoSuchAlgorithmException
      */
-    public static byte[] sha512(byte[] message) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance(KeysEnum.SHA512.getName());
+    public static byte[] sha512(byte[] message) {
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance(KeysEnum.SHA512.getName());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
         digest.update(message);
         return digest.digest();
     }
@@ -193,20 +237,31 @@ public final class CodecUtil {
         return (int) crc32.getValue();
     }
 
+    private static Mac makeMac(SecretKey secretKey) {
+        Mac mac;
+        try {
+            mac = Mac.getInstance(secretKey.getAlgorithm());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            mac.init(secretKey);
+        } catch (InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
+        return mac;
+    }
+
     /**
      * HmacMD5摘要算法
      *
      * @param keys
      * @param message
      * @return
-     * @throws NoSuchAlgorithmException
-     * @throws InvalidKeyException
      */
-    public static byte[] hmacMD5(byte[] keys, byte[] message) throws NoSuchAlgorithmException, InvalidKeyException {
+    public static byte[] hmacMD5(byte[] keys, byte[] message) {
         SecretKey secretKey = new SecretKeySpec(keys, KeysEnum.HmacMD5.getName());
-        Mac mac = Mac.getInstance(secretKey.getAlgorithm());
-        mac.init(secretKey);
-        return mac.doFinal(message);
+        return makeMac(secretKey).doFinal(message);
     }
 
     /**
@@ -215,14 +270,10 @@ public final class CodecUtil {
      * @param keys
      * @param message
      * @return
-     * @throws NoSuchAlgorithmException
-     * @throws InvalidKeyException
      */
-    public static byte[] hmacSHA1(byte[] keys, byte[] message) throws NoSuchAlgorithmException, InvalidKeyException {
+    public static byte[] hmacSHA1(byte[] keys, byte[] message) {
         SecretKey secretKey = new SecretKeySpec(keys, KeysEnum.HmacSHA1.getName());
-        Mac mac = Mac.getInstance(secretKey.getAlgorithm());
-        mac.init(secretKey);
-        return mac.doFinal(message);
+        return makeMac(secretKey).doFinal(message);
     }
 
     /**
@@ -231,14 +282,10 @@ public final class CodecUtil {
      * @param keys
      * @param message
      * @return
-     * @throws NoSuchAlgorithmException
-     * @throws InvalidKeyException
      */
-    public static byte[] hmacSHA256(byte[] keys, byte[] message) throws NoSuchAlgorithmException, InvalidKeyException {
+    public static byte[] hmacSHA256(byte[] keys, byte[] message) {
         SecretKey secretKey = new SecretKeySpec(keys, KeysEnum.HmacSHA256.getName());
-        Mac mac = Mac.getInstance(secretKey.getAlgorithm());
-        mac.init(secretKey);
-        return mac.doFinal(message);
+        return makeMac(secretKey).doFinal(message);
     }
 
     /**
@@ -247,14 +294,10 @@ public final class CodecUtil {
      * @param keys
      * @param message
      * @return
-     * @throws NoSuchAlgorithmException
-     * @throws InvalidKeyException
      */
-    public static byte[] hmacSHA384(byte[] keys, byte[] message) throws NoSuchAlgorithmException, InvalidKeyException {
+    public static byte[] hmacSHA384(byte[] keys, byte[] message) {
         SecretKey secretKey = new SecretKeySpec(keys, KeysEnum.HmacSHA384.getName());
-        Mac mac = Mac.getInstance(secretKey.getAlgorithm());
-        mac.init(secretKey);
-        return mac.doFinal(message);
+        return makeMac(secretKey).doFinal(message);
     }
 
     /**
@@ -263,14 +306,10 @@ public final class CodecUtil {
      * @param keys
      * @param message
      * @return
-     * @throws NoSuchAlgorithmException
-     * @throws InvalidKeyException
      */
-    public static byte[] hmacSHA512(byte[] keys, byte[] message) throws NoSuchAlgorithmException, InvalidKeyException {
+    public static byte[] hmacSHA512(byte[] keys, byte[] message) {
         SecretKey secretKey = new SecretKeySpec(keys, KeysEnum.HmacSHA512.getName());
-        Mac mac = Mac.getInstance(secretKey.getAlgorithm());
-        mac.init(secretKey);
-        return mac.doFinal(message);
+        return makeMac(secretKey).doFinal(message);
     }
 
 
@@ -325,60 +364,193 @@ public final class CodecUtil {
     /**
      * AES128算法
      *
-     * @param aes128  AES加解密模式和填充模式
+     * @param pad     AES加解密模式和填充模式
      * @param mode    编解码模式（加密或者解密）
      * @param keys    加密密码字节数组
      * @param message 明文字节数组，待加密的字节数组
      * @return 返回加密后的密文字节数组，加密错误返回null
+     * @throws InvalidKeyException
+     * @throws BadPaddingException
      */
-    private static byte[] aes128(int mode, AES128Enum aes128, byte[] keys, byte[] message) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+    private static byte[] aes128(int mode, AESPadEnum pad, byte[] keys, byte[] message) throws InvalidKeyException, BadPaddingException {
         // 1 获取加密密钥
         SecretKeySpec keySpec = new SecretKeySpec(keys, KeysEnum.AES128.getName());
         // 2 获取Cipher实例
-        Cipher cipher = Cipher.getInstance(aes128.getName());
-        // 查看数据块位数 默认为16(byte) * 8 = 128 bit
+        Cipher cipher;
+        try {
+            cipher = Cipher.getInstance(pad.getName());
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            throw new RuntimeException(e);
+        }
+        // 查看数据块位数 默认为16(byte) * 8 = 128bit
         // 3 初始化Cipher实例。设置执行模式以及加密密钥
         cipher.init(mode, keySpec);
-        // 4 执行
-        return cipher.doFinal(message);
+        try {
+            // 4 执行
+            return cipher.doFinal(message);
+        } catch (IllegalBlockSizeException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * AES128解密算法
      *
-     * @param aes128  AES加解密和填充模式模式
+     * @param pad     AES加解密和填充模式模式
      * @param keys    加密密码字节数组
      * @param message 明文字节数组，待加密的字节数组
      * @return 返回加密后的密文字节数组，加密错误返回null
+     * @throws InvalidKeyException
+     * @throws BadPaddingException
      */
-    public static byte[] enaes128(AES128Enum aes128, byte[] keys, byte[] message) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException {
-        return aes128(Cipher.ENCRYPT_MODE, aes128, keys, message);
+    public static byte[] enaes128(AESPadEnum pad, byte[] keys, byte[] message) throws InvalidKeyException, BadPaddingException {
+        return aes128(Cipher.ENCRYPT_MODE, pad, keys, message);
     }
 
     /**
      * AES128解密算法
      *
-     * @param aes128  AES加解密和填充模式模式
+     * @param pad     AES加解密和填充模式模式
      * @param keys    加密密码字节数组
      * @param message 明文字节数组，待加密的字节数组
      * @return 返回加密后的密文字节数组，加密错误返回null
+     * @throws InvalidKeyException
+     * @throws BadPaddingException
      */
-    public static byte[] deaes128(AES128Enum aes128, byte[] keys, byte[] message) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException {
-        return aes128(Cipher.DECRYPT_MODE, aes128, keys, message);
+    public static byte[] deaes128(AESPadEnum pad, byte[] keys, byte[] message) throws InvalidKeyException, BadPaddingException {
+        return aes128(Cipher.DECRYPT_MODE, pad, keys, message);
     }
 
-    private static byte[] prirsa(int mode, byte[] privateKey, byte[] message) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        PrivateKey priKey = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(privateKey));
-        Cipher cipher = Cipher.getInstance("RSA");
+    /**
+     * AES128解密算法
+     *
+     * @param keys    加密密码字节数组
+     * @param message 明文字节数组，待加密的字节数组
+     * @return 返回加密后的密文字节数组，加密错误返回null
+     * @throws InvalidKeyException
+     * @throws BadPaddingException
+     */
+    public static byte[] enaes128(byte[] keys, byte[] message) throws InvalidKeyException, BadPaddingException {
+        return aes128(Cipher.ENCRYPT_MODE, AESPadEnum.ECB_PKCS5_PADDING, keys, message);
+    }
+
+    /**
+     * AES128解密算法
+     *
+     * @param keys    加密密码字节数组
+     * @param message 明文字节数组，待加密的字节数组
+     * @return 返回加密后的密文字节数组，加密错误返回null
+     * @throws InvalidKeyException
+     * @throws BadPaddingException
+     */
+    public static byte[] deaes128(byte[] keys, byte[] message) throws InvalidKeyException, BadPaddingException {
+        return aes128(Cipher.DECRYPT_MODE, AESPadEnum.ECB_PKCS5_PADDING, keys, message);
+    }
+
+    private static byte[] prirsa(int mode, RSAPadEnum pad, byte[] privateKey, byte[] message) throws InvalidKeySpecException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+        KeyFactory factory;
+        try {
+            factory = KeyFactory.getInstance(KeysEnum.RSA2048.getName());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+        PrivateKey priKey = factory.generatePrivate(new PKCS8EncodedKeySpec(privateKey));
+
+        Cipher cipher;
+        try {
+            cipher = Cipher.getInstance(pad.getName());
+            System.out.println(cipher.getBlockSize());
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            throw new RuntimeException(e);
+        }
+
         cipher.init(mode, priKey);
         return cipher.doFinal(message);
     }
 
-    private static byte[] pubrsa(int mode, byte[] publicKey, byte[] message) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        PublicKey pubKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(publicKey));
-        Cipher cipher = Cipher.getInstance("RSA");
+    private static byte[] pubrsa(int mode, RSAPadEnum pad, byte[] publicKey, byte[] message) throws InvalidKeySpecException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+        KeyFactory factory;
+        try {
+            factory = KeyFactory.getInstance(KeysEnum.RSA2048.getName());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+        PublicKey pubKey = factory.generatePublic(new X509EncodedKeySpec(publicKey));
+
+        Cipher cipher;
+        try {
+            cipher = Cipher.getInstance(pad.getName());
+            System.out.println(cipher.getBlockSize());
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            throw new RuntimeException(e);
+        }
+
         cipher.init(mode, pubKey);
         return cipher.doFinal(message);
+    }
+
+    /**
+     * RSA私钥签名数据
+     *
+     * @param pad
+     * @param privateKey
+     * @param message
+     * @return
+     * @throws InvalidKeySpecException
+     * @throws InvalidKeyException
+     * @throws BadPaddingException
+     * @throws IllegalBlockSizeException
+     */
+    public static byte[] prienrsa(RSAPadEnum pad, byte[] privateKey, byte[] message) throws InvalidKeySpecException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+        return prirsa(Cipher.ENCRYPT_MODE, pad, privateKey, message);
+    }
+
+    /**
+     * RSA私钥解密数据
+     *
+     * @param pad
+     * @param privateKey
+     * @param message
+     * @return
+     * @throws InvalidKeySpecException
+     * @throws InvalidKeyException
+     * @throws BadPaddingException
+     * @throws IllegalBlockSizeException
+     */
+    public static byte[] pridersa(RSAPadEnum pad, byte[] privateKey, byte[] message) throws InvalidKeySpecException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+        return prirsa(Cipher.DECRYPT_MODE, pad, privateKey, message);
+    }
+
+    /**
+     * RSA公钥加密数据
+     *
+     * @param pad
+     * @param publicKey
+     * @param message
+     * @return
+     * @throws InvalidKeySpecException
+     * @throws InvalidKeyException
+     * @throws BadPaddingException
+     * @throws IllegalBlockSizeException
+     */
+    public static byte[] pubenrsa(RSAPadEnum pad, byte[] publicKey, byte[] message) throws InvalidKeySpecException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+        return pubrsa(Cipher.ENCRYPT_MODE, pad, publicKey, message);
+    }
+
+    /**
+     * RSA公钥解密签名
+     *
+     * @param pad
+     * @param publicKey
+     * @param message
+     * @return
+     * @throws InvalidKeySpecException
+     * @throws InvalidKeyException
+     * @throws BadPaddingException
+     * @throws IllegalBlockSizeException
+     */
+    public static byte[] pubdersa(RSAPadEnum pad, byte[] publicKey, byte[] message) throws InvalidKeySpecException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+        return pubrsa(Cipher.DECRYPT_MODE, pad, publicKey, message);
     }
 
     /**
@@ -387,15 +559,13 @@ public final class CodecUtil {
      * @param privateKey
      * @param message
      * @return
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchPaddingException
+     * @throws InvalidKeySpecException
      * @throws InvalidKeyException
      * @throws BadPaddingException
      * @throws IllegalBlockSizeException
-     * @throws InvalidKeySpecException
      */
-    public static byte[] prienrsa(byte[] privateKey, byte[] message) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
-        return prirsa(Cipher.ENCRYPT_MODE, privateKey, message);
+    public static byte[] prienrsa(byte[] privateKey, byte[] message) throws InvalidKeySpecException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+        return prirsa(Cipher.ENCRYPT_MODE, RSAPadEnum.RSA_PKCS1_PADDING, privateKey, message);
     }
 
     /**
@@ -404,15 +574,13 @@ public final class CodecUtil {
      * @param privateKey
      * @param message
      * @return
-     * @throws NoSuchAlgorithmException
      * @throws InvalidKeySpecException
-     * @throws NoSuchPaddingException
      * @throws InvalidKeyException
      * @throws BadPaddingException
      * @throws IllegalBlockSizeException
      */
-    public static byte[] pridersa(byte[] privateKey, byte[] message) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        return prirsa(Cipher.DECRYPT_MODE, privateKey, message);
+    public static byte[] pridersa(byte[] privateKey, byte[] message) throws InvalidKeySpecException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+        return prirsa(Cipher.DECRYPT_MODE, RSAPadEnum.RSA_PKCS1_PADDING, privateKey, message);
     }
 
     /**
@@ -421,15 +589,13 @@ public final class CodecUtil {
      * @param publicKey
      * @param message
      * @return
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchPaddingException
+     * @throws InvalidKeySpecException
      * @throws InvalidKeyException
      * @throws BadPaddingException
      * @throws IllegalBlockSizeException
-     * @throws InvalidKeySpecException
      */
-    public static byte[] pubenrsa(byte[] publicKey, byte[] message) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
-        return pubrsa(Cipher.ENCRYPT_MODE, publicKey, message);
+    public static byte[] pubenrsa(byte[] publicKey, byte[] message) throws InvalidKeySpecException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+        return pubrsa(Cipher.ENCRYPT_MODE, RSAPadEnum.RSA_PKCS1_PADDING, publicKey, message);
     }
 
     /**
@@ -438,15 +604,13 @@ public final class CodecUtil {
      * @param publicKey
      * @param message
      * @return
-     * @throws NoSuchAlgorithmException
      * @throws InvalidKeySpecException
-     * @throws NoSuchPaddingException
      * @throws InvalidKeyException
      * @throws BadPaddingException
      * @throws IllegalBlockSizeException
      */
-    public static byte[] pubdersa(byte[] publicKey, byte[] message) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        return pubrsa(Cipher.DECRYPT_MODE, publicKey, message);
+    public static byte[] pubdersa(byte[] publicKey, byte[] message) throws InvalidKeySpecException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+        return pubrsa(Cipher.DECRYPT_MODE, RSAPadEnum.RSA_PKCS1_PADDING, publicKey, message);
     }
 
 }

@@ -49,20 +49,18 @@ public final class ThreadUtil {
     }
     
     public static void sleepUninterruptibly(long timeout, TimeUnit unit) {
-        LockSupport.parkNanos(ThreadUtil.class, unit.toNanos(timeout));
-        
-        
-        /*long remaining = unit.toNanos(timeout);
+        long remaining = unit.toNanos(timeout);
         long beginTimeNanos = System.nanoTime(), endTimeNanos;
         while (remaining > 0) {
             try {
                 Thread.sleep(remaining / 1000000L, (int) (remaining % 1000000L));
                 return;
             } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
                 remaining -= (endTimeNanos = System.nanoTime()) - beginTimeNanos;
                 beginTimeNanos = endTimeNanos;
             }
-        }*/
+        }
     }
     
     public static void join(Thread thread) throws InterruptedException {
@@ -84,11 +82,16 @@ public final class ThreadUtil {
         if (null == thread || !thread.isAlive()) {
             return;
         }
+        boolean isInterrupted = false;
         while (thread.isAlive()) {
             try {
                 thread.join();
+                if (!thread.isInterrupted() && isInterrupted) {
+                    thread.interrupt();
+                }
                 return;
             } catch (InterruptedException ignored) {
+                isInterrupted = true;
             }
         }
     }
@@ -97,15 +100,20 @@ public final class ThreadUtil {
         if (null == thread || !thread.isAlive()) {
             return;
         }
+        boolean isInterrupted = false;
         long remaining = unit.toNanos(timeout);
         long beginTimeNanos = System.nanoTime(), endTimeNanos;
         while (thread.isAlive() && remaining > 0) {
             try {
                 thread.join(remaining / 1000000L, (int) (remaining % 1000000L));
+                if (!thread.isInterrupted() && isInterrupted) {
+                    thread.interrupt();
+                }
                 return;
             } catch (InterruptedException ignored) {
                 remaining -= (endTimeNanos = System.nanoTime()) - beginTimeNanos;
                 beginTimeNanos = endTimeNanos;
+                isInterrupted = true;
             }
         }
     }
